@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxIQ | Telemetry Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Inter for UI, Roboto Mono for data -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- html2pdf.js for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#2563eb',    // Electric Blue
+                            dark: '#0f172a',    // Slate 900
+                            panel: '#1e293b',   // Slate 800
+                            border: '#334155',  // Slate 700
+                            text: '#f8fafc',    // Slate 50
+                            muted: '#94a3b8',   // Slate 400
+                            green: '#10b981',   // Emerald 500
+                            amber: '#f59e0b',   // Amber 500
+                            red: '#ef4444'      // Red 500
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-dark text-brand-text min-h-screen selection:bg-brand-blue selection:text-white antialiased font-sans flex flex-col">
+    
+    <!-- Header -->
+    <header class="border-b border-brand-border bg-brand-dark/95 sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded bg-brand-blue flex items-center justify-center text-white text-xs">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <h1 class="text-lg font-mono font-bold tracking-[0.2em] text-white">VOXIQ <span class="text-brand-muted font-normal text-sm tracking-normal ml-2">/ Telemetry</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="flex items-center gap-2 text-xs font-mono text-brand-green">
+                <span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span> SYSTEM ONLINE
+            </span>
+            <div class="w-px h-4 bg-brand-border mx-2"></div>
+            <button id="export-pdf-btn" class="hidden text-xs font-mono font-medium text-brand-muted hover:text-white bg-transparent border border-brand-border hover:border-brand-muted px-4 py-1.5 rounded transition-colors flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-download"></i> EXPORT REPORT
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 grid grid-cols-1 xl:grid-cols-12 gap-6 max-w-[1600px] mx-auto w-full">
+        
+        <!-- LEFT COLUMN: Live Session Pane -->
+        <section class="xl:col-span-5 flex flex-col gap-4 h-[calc(100vh-120px)]">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xs font-mono font-semibold text-brand-muted uppercase tracking-wider">Session Log</h2>
+                <span class="text-[10px] font-mono text-brand-muted" id="session-timer">00:00:00</span>
+            </div>
+            
+            <!-- Terminal/Log Interface -->
+            <div class="flex-1 bg-brand-panel border border-brand-border rounded flex flex-col overflow-hidden shadow-sm">
+                
+                <!-- Log Container -->
+                <div id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar font-mono text-xs">
+                    <div class="log-entry system flex gap-2">
+                        <span class="timestamp text-brand-muted w-14 shrink-0">[SYS]</span>
+                        <span class="content text-brand-muted">Initializing VoxIQ session...</span>
+                    </div>
+                    <div class="log-entry system flex gap-2">
+                        <span class="timestamp text-brand-muted w-14 shrink-0">[SYS]</span>
+                        <span class="content text-brand-green">Connection established.</span>
+                    </div>
+                    <div class="log-entry agent flex gap-2 mt-2">
+                        <span class="timestamp text-brand-blue w-14 shrink-0">[AI]</span>
+                        <span class="content text-brand-text">Hello. I am VoxIQ. Are you ready for your mock interview? Tell me about a time you faced a difficult technical challenge and how you overcame it.</span>
+                    </div>
+                </div>
+
+                <!-- Input/Control Area -->
+                <div class="border-t border-brand-border bg-brand-dark/50 p-4 flex flex-col gap-3">
+                    <!-- Visualizer -->
+                    <div id="visualizer-container" class="h-12 w-full bg-brand-dark rounded border border-brand-border overflow-hidden relative">
+                        <canvas id="audio-canvas" class="absolute inset-0 w-full h-full opacity-50"></canvas>
+                        <div id="status-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-mono text-brand-muted uppercase tracking-widest z-10 pointer-events-none">Awaiting Input</div>
+                    </div>
+                    
+                    <!-- Text Input -->
+                    <div class="flex gap-2">
+                        <input type="text" id="text-input" placeholder="Type your answer here or use the microphone..." class="flex-1 bg-brand-dark border border-brand-border rounded px-3 py-2 text-xs font-mono text-brand-text focus:outline-none focus:border-brand-blue transition-colors">
+                        <button id="send-btn" class="bg-brand-blue hover:bg-blue-700 text-white font-mono text-xs font-medium px-4 rounded transition-colors cursor-pointer flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="flex gap-2">
+                        <button id="record-btn" class="flex-1 bg-brand-panel hover:bg-brand-border text-white font-mono text-xs font-medium py-2 rounded border border-brand-border transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-microphone text-brand-blue"></i> AUDIO TRANSMIT
+                        </button>
+                        <button id="stop-btn" class="hidden flex-1 bg-brand-red hover:bg-red-700 text-white font-mono text-xs font-medium py-2 rounded transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-stop"></i> TERMINATE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Analytics Dashboard -->
+        <section id="report-container" class="xl:col-span-7 flex flex-col gap-4">
+            <h2 class="text-xs font-mono font-semibold text-brand-muted uppercase tracking-wider">Real-Time Telemetry</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Overall Readiness Score -->
+                <div class="bg-brand-panel border border-brand-border rounded p-6 flex flex-col justify-between shadow-sm lg:col-span-1">
+                    <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest mb-4">Readiness Index</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="final-score" class="font-mono text-6xl font-bold text-white tracking-tighter">--</span>
+                        <span class="text-xs font-mono text-brand-muted">/100</span>
+                    </div>
+                    <div class="mt-4 h-1 w-full bg-brand-dark rounded-full overflow-hidden">
+                        <div id="score-bar" class="h-full bg-brand-muted transition-all duration-1000 w-0"></div>
+                    </div>
+                </div>
+
+                <!-- Acoustic Telemetry Cards -->
+                <div class="grid grid-cols-2 gap-4 lg:col-span-2">
+                    <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest">WPM Rate</span>
+                        <span id="metric-wpm" class="font-mono text-2xl font-bold text-white mt-2">--</span>
+                        <span class="text-[9px] font-mono text-brand-green mt-1">Target: ~140</span>
+                    </div>
+                    <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest">Fillers Detected</span>
+                        <span id="metric-fillers" class="font-mono text-2xl font-bold text-white mt-2">--</span>
+                        <span class="text-[9px] font-mono text-brand-amber mt-1">Minimize usage</span>
+                    </div>
+                    <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest">Jitter (Freq Δ)</span>
+                        <span id="metric-jitter" class="font-mono text-2xl font-bold text-white mt-2">--</span>
+                        <span class="text-[9px] font-mono text-brand-muted mt-1">% cycle-to-cycle</span>
+                    </div>
+                    <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest">Shimmer (Amp Δ)</span>
+                        <span id="metric-shimmer" class="font-mono text-2xl font-bold text-white mt-2">--</span>
+                        <span class="text-[9px] font-mono text-brand-muted mt-1">% cycle-to-cycle</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart.js Visualization -->
+            <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col shadow-sm flex-1 min-h-[200px]">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest">Vocal Confidence Projection</span>
+                    <span id="metric-conf" class="text-xs font-mono font-bold text-brand-blue">-- AVG</span>
+                </div>
+                <div class="flex-1 relative w-full min-h-[150px]">
+                    <canvas id="confidence-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- NLP S.T.A.R. Breakdown -->
+            <div class="bg-brand-panel border border-brand-border rounded p-4 flex flex-col shadow-sm">
+                <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest mb-4">Semantic S.T.A.R. Validation</span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <!-- S -->
+                    <div class="border-l-2 border-brand-border pl-3 flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-mono text-white">Situation</span>
+                            <span id="score-s-text" class="text-[10px] font-mono text-brand-muted">0.00</span>
+                        </div>
+                        <div class="h-1 w-full bg-brand-dark rounded-full overflow-hidden">
+                            <div id="bar-s" class="h-full bg-brand-border transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                    <!-- T -->
+                    <div class="border-l-2 border-brand-border pl-3 flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-mono text-white">Task</span>
+                            <span id="score-t-text" class="text-[10px] font-mono text-brand-muted">0.00</span>
+                        </div>
+                        <div class="h-1 w-full bg-brand-dark rounded-full overflow-hidden">
+                            <div id="bar-t" class="h-full bg-brand-border transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                    <!-- A -->
+                    <div class="border-l-2 border-brand-border pl-3 flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-mono text-white">Action</span>
+                            <span id="score-a-text" class="text-[10px] font-mono text-brand-muted">0.00</span>
+                        </div>
+                        <div class="h-1 w-full bg-brand-dark rounded-full overflow-hidden">
+                            <div id="bar-a" class="h-full bg-brand-border transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                    <!-- R -->
+                    <div class="border-l-2 border-brand-border pl-3 flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-mono text-white">Result</span>
+                            <span id="score-r-text" class="text-[10px] font-mono text-brand-muted">0.00</span>
+                        </div>
+                        <div class="h-1 w-full bg-brand-dark rounded-full overflow-hidden">
+                            <div id="bar-r" class="h-full bg-brand-border transition-all duration-1000 w-0"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Flags -->
+                <div id="nlp-feedback" class="bg-brand-dark border border-brand-border rounded p-3 text-xs font-mono text-brand-muted flex items-start gap-2 hidden mt-2">
+                    <i class="fa-solid fa-triangle-exclamation text-brand-amber mt-0.5"></i>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-brand-amber font-semibold">DIAGNOSTIC FLAGS:</span>
+                        <span id="nlp-flags"></span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Hidden config -->
+    <input type="hidden" id="job-desc" value="Software Engineer proficient in Python, APIs, and scalable architectures.">
+
+    <script src="app.js"></script>
+</body>
+</html>

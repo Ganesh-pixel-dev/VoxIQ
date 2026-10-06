@@ -1,0 +1,54 @@
+/* VoxIQ Enterprise Telemetry Styles */
+
+/* Base Reset & Variables */
+:root {
+    --brand-blue: #2563eb;
+    --brand-dark: #0f172a;
+    --brand-panel: #1e293b;
+    --brand-border: #334155;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--brand-dark);
+    border-radius: 0px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--brand-border);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-blue);
+}
+
+/* Log Entry Styling */
+.log-entry {
+    line-height: 1.5;
+}
+.log-entry .timestamp {
+    opacity: 0.8;
+}
+
+/* Audio Visualizer Animation (Clinical, no bouncing) */
+/* We will handle the canvas rendering in JS to look like a strict frequency bar */
+
+/* Utility: Pulse Animation (Subtle) */
+@keyframes strictPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+.animate-strict-pulse {
+    animation: strictPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Chart Canvas adjustments */
+canvas#confidence-chart {
+    /* Ensure the canvas fills the container properly without overflowing */
+    width: 100% !important;
+    height: 100% !important;
+}
