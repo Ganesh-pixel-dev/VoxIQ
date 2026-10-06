@@ -1,0 +1,17 @@
+{
+ "tiny.en": {
+  "wer": 0.0453,
+  "utterances": 40,
+  "seconds": 14.1
+ },
+ "base.en": {
+  "wer": 0.0427,
+  "utterances": 40,
+  "seconds": 10.3
+ },
+ "small.en": {
+  "wer": 0.0401,
+  "utterances": 40,
+  "seconds": 15.0
+ }
+}

@@ -1,0 +1,2 @@
+Junior Backend Engineer. You will build REST APIs in Python and Django, write SQL queries,
+and ship with Docker and Git. We value clear communication, testing and debugging skills.

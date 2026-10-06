@@ -1,0 +1,17 @@
+Aarav Menon
+aarav.menon@example.com | Kochi
+
+PROJECTS
+Drishti AI | Python, OpenCV, Django
+- Flags edited photos with error level analysis and shows a heatmap of the regions it flagged.
+Mnemo | Python, BM25
+- Search over my own study notes that cites the note each answer came from.
+Sudhaar | Django, PostgreSQL
+- Makes ward complaint response times public. Presented at a college seminar.
+
+SKILLS
+Languages: Python, JavaScript, C++
+Tools: Git, Django, Docker basics
+
+EDUCATION
+BSc Computer Science, final year

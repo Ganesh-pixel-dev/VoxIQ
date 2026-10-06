@@ -1,0 +1,14 @@
+{
+  "_help": "always: counted wherever they appear. contextual: counted only when the surrounding words look like a filler use; set one to false to switch it off.",
+  "always": ["um", "umm", "uh", "uhh", "er", "erm", "hmm", "mm", "matlab", "basically", "so basically"],
+  "contextual": {
+    "like": true,
+    "you know": true,
+    "actually": true,
+    "literally": true,
+    "kind of": true,
+    "sort of": true,
+    "na": true,
+    "right": true
+  }
+}
