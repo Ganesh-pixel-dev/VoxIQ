@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoxIQ</title>
+  <meta name="description" content="Practise interview answers and see exactly what improved.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d5c4b'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f6f4ee'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="top">
+    <div class="wrap top-row">
+      <div>
+        <h1 class="brand">VoxIQ</h1>
+        <p class="tag">Practise interview answers and see exactly what improved.</p>
+      </div>
+      <div class="chips" id="status" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section id="setup" class="panel" aria-labelledby="setup-h">
+      <h2 id="setup-h">1. Your résumé and the role</h2>
+      <p class="muted">Questions are written from your own projects, so you practise what you will actually be asked. Your résumé is read on this machine and not stored.</p>
+      <form id="setup-form" class="setup-grid">
+        <div class="field">
+          <label for="resume">Résumé (PDF, DOCX or TXT, up to 5 MB)</label>
+          <input id="resume" type="file" accept=".pdf,.docx,.txt">
+        </div>
+        <div class="field wide">
+          <label for="jd">Job description (optional, paste the text)</label>
+          <textarea id="jd" rows="6" placeholder="Paste the requirements here. The answer feedback checks which of them you mentioned."></textarea>
+        </div>
+        <div class="actions wide">
+          <button type="submit" class="btn primary" id="make-q">Write my questions</button>
+          <button type="button" class="btn" id="hr-only">Use standard questions only</button>
+          <span id="setup-msg" class="msg" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section id="questions" class="panel" hidden aria-labelledby="q-h">
+      <h2 id="q-h">2. Pick a question</h2>
+      <div id="q-note" class="notice" hidden></div>
+      <div id="q-list"></div>
+      <form id="custom-form" class="custom">
+        <label for="custom-q">Or type your own question</label>
+        <div class="inline">
+          <input id="custom-q" type="text" maxlength="400" placeholder="Why should we hire you?">
+          <button class="btn" type="submit">Practise this</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="practice" class="panel" hidden aria-labelledby="p-h">
+      <h2 id="p-h">3. Answer it</h2>
+      <p id="p-question" class="question"></p>
+      <p id="p-source" class="muted source"></p>
+      <div class="recorder">
+        <button id="rec" class="btn primary big" type="button">Start recording</button>
+        <span id="timer" class="timer" aria-live="off">0:00</span>
+        <div class="meter" aria-hidden="true"><i id="level"></i></div>
+      </div>
+      <p class="muted small">Aim for one to two minutes, as if the interviewer just asked. <span id="limits"></span></p>
+      <div class="or">
+        <label for="file" class="linklike">Or upload a recording instead</label>
+        <input id="file" type="file" accept="audio/*,.webm,.m4a,.mp3,.wav,.ogg" class="visually-file">
+      </div>
+      <div id="p-msg" class="notice error" role="alert" hidden></div>
+      <div id="busy" class="busy" hidden role="status">Transcribing and checking your answer. The first run loads the models and takes longer.</div>
+    </section>
+
+    <section id="review" hidden aria-labelledby="r-h">
+      <h2 id="r-h" class="visually-hidden">Feedback</h2>
+      <div id="r-body"></div>
+    </section>
+  </main>
+
+  <audio id="player" preload="none"></audio>
+  <footer class="wrap foot">
+    <p>VoxIQ is a practice tool. It does not predict whether you will be hired. Thresholds are my own choices and are shown next to every result. The speech and question models run on this computer.</p>
+  </footer>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
